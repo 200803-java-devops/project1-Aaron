@@ -1,7 +1,44 @@
-# project1-Aaron
-My super cool application management tool
+# project 1 - Aaron Downward
+## Automated Application Deployment and Update Tool - AADUT
+### Proposal
+A tool that allows developers to easily and quickly deploy/update their developed application to the target audience
 
-Still debating ideas, but my initial thoughts are to develop an application deployment/updating and management tool. I will focus on the automated deployment part of the tool and auto-update of application versions. As I have time, I will expand on this to provide more application and monitoring tools.
+The target audience will be able to select and install desired applications to their system or update existing applications. 
 
-I will start by picking a colleagues project0 and deploy that via my server. Then will move to make it more general.
+### User Stories
+- As a developer, I need to submit and manage my java application so that users have access to my application and are satisfied with their experience.
+    - As a developer, I need to be able to add a new application with application-specific options to the server so that users can see and use my latest project
+    - As a developer, I need to be able to push application updates to all users that have installed my application so that they have the latest and greatest version of my product
+    - As a developer, I want to be able to see usage statistics, reviews, and bug reports of my application so that I can improve and update the application accordingly
+- As a user, I need to view and install supported java applications on my system so that I can make use of the latest applications
+    - As a user, I need to easily install a java application on my system so that I can easily use it, even if I'm not tech savvy
+    - As a user, I need to be able to get updates to my installed application or enable auto-updates, so that I have the latest/best working application
+    - As a user, I want to be able to submit feedback on an application I'm using so that it can be improved
+- As a server manager, I want to be able to remove undesired applications so that I have better control of available applications
 
+### Features
+- [ ] Proposal & User Stories
+- [ ] Documentation
+- [ ] Unit testing
+- [ ] Logging
+- [ ] Agile SDLC
+- [ ] SQL Data Persistance
+- [ ] Servlet API/REST
+- [ ] Containerization
+- [ ] Cloud Hosting
+
+### Tech Stack
+- [ ] JavaSE 8
+- [ ] JavaEE 7:
+  - [ ] Servlet
+- [ ] PostgreSQL
+- [ ] Maven 3
+- [ ] JUnit 5
+- [ ] Docker
+- [ ] Amazon Web Services
+- [ ] Git SCM
+
+### Presentation
+- [ ] 3 minute slide deck
+- [ ] 5-10 minute live demonstration
+- [ ] 2 minute questions & answers
