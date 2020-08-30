@@ -1,4 +1,4 @@
-# project 1 - Aaron Downward
+# Project1 - Aaron Downward
 ## Automated Application Deployment and Update Tool - AADUT
 ### Proposal
 A tool that allows developers to easily and quickly deploy/update their developed application to the target audience
