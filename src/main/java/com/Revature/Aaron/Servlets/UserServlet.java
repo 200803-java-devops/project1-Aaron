@@ -1,12 +1,16 @@
 package com.Revature.Aaron.Servlets;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Enumeration;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -45,21 +49,38 @@ public class UserServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        Enumeration<String> en = req.getParameterNames();
-        while(en.hasMoreElements()) {
-            String param = en.nextElement();
-            System.out.println(param);
-        }
-        String directory = "C:/Users/downw/OneDrive/Desktop/practice/";
+
+        String mainDirectory = "C:/Users/downw/OneDrive/Desktop/practice/";
+        String projectDir = mainDirectory + "gitProjects/";
+        String zipDir = mainDirectory + "projectZips/";
         String gitURL = req.getParameter("githubURL");
-        String test = Commands.executeCommand("git clone " + gitURL, directory);
+        
+        String test = Commands.executeCommand("git clone " + gitURL, projectDir);
         int dotGitIndex = gitURL.indexOf(".git");
         int lastSlashIndex = gitURL.lastIndexOf("/");
         String projectName = gitURL.substring(lastSlashIndex + 1, dotGitIndex);
-        String test2 = Commands.executeCommand("mvn clean package", directory + projectName + "/");
-        System.out.println("hello");
-        System.out.println(test);
-        System.out.println(test2);
-        doGet(req, resp);
+        String test2 = Commands.executeCommand("mvn clean package", projectDir + projectName + "/");
+
+        String fileName = projectName + ".zip";
+        String test3 = Commands.executeCommand("jar -cMf " + fileName + " " + projectName + "/", projectDir);
+        String test4 = Commands.executeCommand("mv " + fileName + " ../projectZips/", projectDir);
+
+        File file = new File(zipDir + "/" + projectName + ".zip");
+        ServletContext ctx = getServletContext();
+		InputStream fis = new FileInputStream(file);
+		String mimeType = ctx.getMimeType(file.getAbsolutePath());
+		resp.setContentType(mimeType != null? mimeType:"application/octet-stream");
+		resp.setContentLength((int) file.length());
+		resp.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+		
+		ServletOutputStream os = resp.getOutputStream();
+		byte[] bufferData = new byte[1024];
+		int read=0;
+		while((read = fis.read(bufferData))!= -1){
+			os.write(bufferData, 0, read);
+		}
+		os.flush();
+		os.close();
+		fis.close();
     }
 }
