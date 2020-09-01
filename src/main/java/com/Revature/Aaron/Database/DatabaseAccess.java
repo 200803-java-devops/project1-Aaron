@@ -11,19 +11,20 @@ import com.Revature.Aaron.Objects.Application;
 
 public class DatabaseAccess {
     
-    public static boolean addApplicationToDB(String firstName, String lastName, String appName, String appDescription, String appURL, String version, LocalDateTime versionDate) {
+    public static boolean addApplicationToDB(String appName, String username, String firstName, String lastName, String appDescription, String appURL, String version) {
 
-        String applicationInsert = "INSERT INTO applications VALUES(?, ?, ?, ?, ?, ?, ?);";
+        String applicationInsert = "INSERT INTO applications VALUES(?, ?, ?, ?, ?, ?, ?, ?);";
         PreparedStatement statement;
         try {
             statement = ConnectionUtil.getConnection().prepareStatement(applicationInsert);
-            statement.setString(1, firstName);
-            statement.setString(2, lastName);
-            statement.setString(3, appName);
-            statement.setString(4, appDescription);
-            statement.setString(5, appURL);
-            statement.setString(6, version);
-            statement.setTimestamp(7, Timestamp.valueOf(versionDate));
+            statement.setString(1, appName);
+            statement.setString(2, username);
+            statement.setString(3, firstName);
+            statement.setString(4, lastName);
+            statement.setString(5, appDescription);
+            statement.setString(6, appURL);
+            statement.setString(7, version);
+            statement.setTimestamp(8, Timestamp.valueOf(LocalDateTime.now()));
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -33,13 +34,49 @@ public class DatabaseAccess {
         return true;
     }
 
-    public static ArrayList<Application> getApplicationsFromDB() {
+    public static ArrayList<Application> allApplicationsFromDB() {
+        ArrayList<Application> applications = getApplicationsFromDB("", null);
+        return applications;
+    }
+
+    public static ArrayList<Application> applicationsByUsernameFromDB(String username) {
+        String condition = "author_username = ?";
+        String[] setValues = {username};
+        ArrayList<Application> applications = getApplicationsFromDB(condition, setValues);
+        return applications;
+    }
+    
+    public static Application applicationFromDB(String username, String appName) {
+        String condition = "author_username = ? AND application_name = ?";
+        String[] setValues = {username, appName};
+        ArrayList<Application> appArrayList = getApplicationsFromDB(condition, setValues);
+        Application app = appArrayList.get(0);
+        return app;
+	}
+
+    private static ArrayList<Application> getApplicationsFromDB(String condition, String[] setValues) {
         ArrayList<Application> applications = new ArrayList<Application>();
-        String query = "SELECT * FROM applications";
+        if (condition != null) {
+            if (!condition.equals("")) {
+
+            }
+        }
+        String query = "SELECT * FROM applications WHERE";
+        if (condition != null) {
+            if (!condition.equals("")) {
+                query += " " + condition;
+            }
+        }
+        query += ";";
         PreparedStatement statement;
         ResultSet rs = null;
         try {
             statement = ConnectionUtil.getConnection().prepareStatement(query);
+            if (setValues != null) {
+                for (int i = 0; i < setValues.length; i++) {
+                    statement.setString(i + 1, setValues[i]);
+                }
+            }   
             rs = statement.executeQuery();
 
         } catch (SQLException e) {
@@ -115,6 +152,26 @@ public class DatabaseAccess {
         return rs;
     }
 
+    public static String[] getUserInfoFromDB(String username) {
+        String[] userInfo = null;
+        ResultSet rs = getUserFromDB(username);
+        if (rs == null) {
+            return userInfo;
+        }
+        try {
+            if (rs.next()) {
+                userInfo = new String[4];
+                userInfo[0] = rs.getString("first_name");
+                userInfo[1] = rs.getString("last_name");
+                userInfo[2] = rs.getString("email");
+                userInfo[3] = rs.getString("user_role");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }     
+        return userInfo;
+	}
+
 	public static String getUserRoleFromDB(String username) {
         ResultSet rs = getUserFromDB(username);
         String role = "";
@@ -165,4 +222,35 @@ public class DatabaseAccess {
         }
         return true;
     }
+
+	public static Boolean updateAppTimestampInDB(String username, String appName) {
+        String appUpdate = "UPDATE applications SET app_version_date = ? WHERE application_name = ? AND author_username = ?;";
+        PreparedStatement statement;
+        try {
+            statement = ConnectionUtil.getConnection().prepareStatement(appUpdate);
+            statement.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
+            statement.setString(2, appName);
+            statement.setString(3, username);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+	}
+
+	public static Boolean deleteApplicationFromDB(String appName, String username) {
+        String appDelete = "DELETE FROM applications WHERE application_name = ? AND author_username = ?;";
+        PreparedStatement statement;
+        try {
+            statement = ConnectionUtil.getConnection().prepareStatement(appDelete);
+            statement.setString(1, appName);
+            statement.setString(2, username);
+            statement.executeUpdate();            
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+		return true;
+	}
 }

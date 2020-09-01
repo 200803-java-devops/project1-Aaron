@@ -8,6 +8,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import com.Revature.Aaron.Database.DatabaseAccess;
 
@@ -23,13 +24,17 @@ public class LoginServlet extends HttpServlet {
         String username = req.getParameter("username");  
         String pass = req.getParameter("userpass"); 
         RequestDispatcher rd;
+        String firstName;
+        String lastName;
+        String email;
+        String role;
 
         if(req.getParameter("newUser") != null) {
-            String firstName = req.getParameter("firstName");
-            String lastName = req.getParameter("lastName");
-            String email = req.getParameter("email");
+            firstName = req.getParameter("firstName");
+            lastName = req.getParameter("lastName");
+            email = req.getParameter("email");
             String userCheck = req.getParameter("user");
-            String role = (userCheck != null) ? "USER" : "DEV";
+            role = (userCheck != null) ? "USER" : "DEV";
 
             if (DatabaseAccess.checkUserInDB(username)) {
                 out.print("That username is already taken, please choose another");
@@ -41,9 +46,12 @@ public class LoginServlet extends HttpServlet {
 
             DatabaseAccess.addUserToDB(username, pass, firstName, lastName, email, role);
         }
-
         if(DatabaseAccess.validateLogin(username, pass)){  
-            String role = DatabaseAccess.getUserRoleFromDB(username);
+            String[] userInfo = DatabaseAccess.getUserInfoFromDB(username);
+            firstName = userInfo[0];
+            lastName = userInfo[1];
+            email = userInfo[2];
+            role = userInfo[3].toLowerCase();
             switch (role) {
                 case "user":
                     rd = req.getRequestDispatcher("user");
@@ -60,7 +68,15 @@ public class LoginServlet extends HttpServlet {
                     rd.include(req, resp);
                     out.close();
                     return;
-            }  
+            }
+            HttpSession session = req.getSession();
+            session.setAttribute("username", username);
+            session.setAttribute("userFirstName", firstName);
+            session.setAttribute("userLastName", lastName);
+            session.setAttribute("userEmail", email);
+            session.setAttribute("userRole", role);
+
+            out.println("<p>Welcome " + username + "!</p>");
             rd.forward(req, resp);
         }  
         else{  

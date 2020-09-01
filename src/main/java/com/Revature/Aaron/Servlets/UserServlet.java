@@ -26,7 +26,7 @@ public class UserServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
         resp.setContentType("text/html");
-        ArrayList<Application> apps = DatabaseAccess.getApplicationsFromDB();
+        ArrayList<Application> apps = DatabaseAccess.allApplicationsFromDB();
 
         PrintWriter out = resp.getWriter();
         out.println("<h1>Browse the applications list and choose what you want to do with it</h1>");
