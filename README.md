@@ -17,26 +17,26 @@ The target audience will be able to select and install desired applications to t
 - As a server manager, I want to be able to remove undesired applications so that I have better control of available applications
 
 ### Features
-- [ ] Proposal & User Stories
+- [x] Proposal & User Stories
 - [ ] Documentation
 - [ ] Unit testing
 - [ ] Logging
-- [ ] Agile SDLC
-- [ ] SQL Data Persistance
-- [ ] Servlet API/REST
-- [ ] Containerization
+- [x] Agile SDLC
+- [x] SQL Data Persistance
+- [x] Servlet API/REST
+- [x] Containerization
 - [ ] Cloud Hosting
 
 ### Tech Stack
-- [ ] JavaSE 8
-- [ ] JavaEE 7:
-  - [ ] Servlet
-- [ ] PostgreSQL
-- [ ] Maven 3
+- [x] JavaSE 8
+- [x] JavaEE 7:
+  - [x] Servlet
+- [x] PostgreSQL
+- [x] Maven 3
 - [ ] JUnit 5
-- [ ] Docker
+- [x] Docker
 - [ ] Amazon Web Services
-- [ ] Git SCM
+- [x] Git SCM
 
 ### Presentation
 - [ ] 3 minute slide deck

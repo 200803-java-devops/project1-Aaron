@@ -3,21 +3,20 @@
 <head>
     <meta charset='utf-8'>
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
-    <title>AADUT Main Page</title>
+    <title>AADUT Login Page</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
     <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
     <script src='main.js'></script>
 </head>
 <body>
     <h1>Welcome to AADUT - The Automate Application Deployment and Update Tool</h1>
-    <p>Please choose the appropriate link for the type of user you are:</p>
-    <form action="developer" method="GET">
-        <input type="submit" value="Go to developer entry point" 
-             name="Developer_link" id="developer_link" />
+    <p>Please login or select create new account:</p>
+    <form action="login" method="post">  
+        Username:<input type="text" name="username"/><br/><br/>  
+        Password:<input type="password" name="userpass"/><br/><br/>  
+        <input type="submit" value="login"/>  
     </form>
-    <form action = "user" method = "GET">
-        <input type="submit" value="Go to user entry point" 
-        name="User_link" id="user_link" />
-     </form>
+    <p><a href="newUser.html">Create new account</a></p>
+
 </body>
 </html>

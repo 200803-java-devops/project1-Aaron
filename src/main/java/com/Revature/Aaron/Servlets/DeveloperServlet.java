@@ -10,6 +10,8 @@ import javax.servlet.http.HttpServletResponse;
 
 public class DeveloperServlet extends HttpServlet {
        
+    private static final long serialVersionUID = 1L;
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         
@@ -30,5 +32,10 @@ public class DeveloperServlet extends HttpServlet {
                 "<br />\n" +
                 "<input type = \"submit\" value = \"Submit\" />\n" +
                 "</form>");
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        doGet(req, resp);
     }
 }

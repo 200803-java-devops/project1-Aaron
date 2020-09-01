@@ -13,20 +13,18 @@ public class Commands {
         pBuilder.command("cmd.exe", "/c", command);
         pBuilder.directory(new File(directory));
         Process process = null;
-        int exitCode = 0;
         String output = "";
 
         try {
             process = pBuilder.start();
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            exitCode = process.waitFor();
+            process.waitFor();
 
             while (reader.ready()) {
                 output += reader.readLine() + "\n";
             }
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         } catch (InterruptedException e) {
             e.printStackTrace();

@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Enumeration;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -21,6 +20,8 @@ import com.Revature.Aaron.Processes.Commands;
 
 public class UserServlet extends HttpServlet {  
     
+    private static final long serialVersionUID = 1L;
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
@@ -49,21 +50,26 @@ public class UserServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        doGet(req, resp);
+
+        if (req.getParameter("githubURL") == null) {
+            return;
+        }
 
         String mainDirectory = "C:/Users/downw/OneDrive/Desktop/practice/";
         String projectDir = mainDirectory + "gitProjects/";
         String zipDir = mainDirectory + "projectZips/";
         String gitURL = req.getParameter("githubURL");
         
-        String test = Commands.executeCommand("git clone " + gitURL, projectDir);
+        Commands.executeCommand("git clone " + gitURL, projectDir);
         int dotGitIndex = gitURL.indexOf(".git");
         int lastSlashIndex = gitURL.lastIndexOf("/");
         String projectName = gitURL.substring(lastSlashIndex + 1, dotGitIndex);
-        String test2 = Commands.executeCommand("mvn clean package", projectDir + projectName + "/");
+        Commands.executeCommand("mvn clean package", projectDir + projectName + "/");
 
         String fileName = projectName + ".zip";
-        String test3 = Commands.executeCommand("jar -cMf " + fileName + " " + projectName + "/", projectDir);
-        String test4 = Commands.executeCommand("mv " + fileName + " ../projectZips/", projectDir);
+        Commands.executeCommand("jar -cMf " + fileName + " " + projectName + "/", projectDir);
+        Commands.executeCommand("mv " + fileName + " ../projectZips/", projectDir);
 
         File file = new File(zipDir + "/" + projectName + ".zip");
         ServletContext ctx = getServletContext();
