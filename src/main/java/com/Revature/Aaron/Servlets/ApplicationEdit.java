@@ -2,7 +2,6 @@ package com.Revature.Aaron.Servlets;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -13,6 +12,7 @@ import javax.servlet.http.HttpSession;
 
 import com.Revature.Aaron.Database.DatabaseAccess;
 import com.Revature.Aaron.Objects.Application;
+import com.Revature.Aaron.Utils.MySessionUtils;
 
 public class ApplicationEdit extends HttpServlet {
     
@@ -59,8 +59,7 @@ public class ApplicationEdit extends HttpServlet {
             Boolean updateSuccess = DatabaseAccess.updateAppTimestampInDB(username, appName);
             if (updateSuccess) {
                 out.println("Successful update");
-                ArrayList<Application> apps = DatabaseAccess.applicationsByUsernameFromDB(username);
-                session.setAttribute("contributedApps", apps);
+                MySessionUtils.updateSessionAppMaps(session);
             } else {
                 out.println("Unable to update application");         
             }

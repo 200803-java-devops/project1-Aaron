@@ -29,3 +29,15 @@ INSERT INTO users VALUES ('dev', '1234', 'Test', 'Developer', 'downward150@gmail
 INSERT INTO users VALUES ('manager', '1234', 'Test', 'Manager', 'downward150@gmail.com', 'MANAGER');
 INSERT INTO users VALUES ('aadown', '1234', 'Aaron', 'Downward', 'downward150@gmail.com', 'DEV');
 INSERT INTO users VALUES ('mehrab', '1234', 'Mehrab', 'Rahman', 'downward150@gmail.com', 'DEV');
+
+CREATE TABLE user_downloaded_applications (
+    username VARCHAR,
+    application_name VARCHAR,
+    application_author_username VARCHAR,
+    app_version_date TIMESTAMP,
+    PRIMARY KEY (username, application_name, application_author_username)
+);
+
+INSERT INTO user_downloaded_applications VALUES ('user', 'Project0-Aaron', 'aadown', '2020-08-17 17:10:50');
+INSERT INTO user_downloaded_applications VALUES ('aadown', 'Project0-Aaron', 'aadown', '2020-08-17 17:10:50');
+INSERT INTO user_downloaded_applications VALUES ('aadown', 'Project1-Aaron', 'aadown', '2020-08-17 17:10:50');

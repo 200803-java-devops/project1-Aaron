@@ -5,6 +5,7 @@ import java.io.File;
 import com.Revature.Aaron.Servlets.DeveloperServlet;
 import com.Revature.Aaron.Servlets.LoginServlet;
 import com.Revature.Aaron.Servlets.ManagerServlet;
+import com.Revature.Aaron.Servlets.ApplicationDownload;
 import com.Revature.Aaron.Servlets.ApplicationEdit;
 import com.Revature.Aaron.Servlets.UserServlet;
 
@@ -23,6 +24,7 @@ public class App {
         server.addServlet("/aadut", "Developer entry point", new DeveloperServlet()).addMapping("/developer");
         server.addServlet("/aadut", "User entry point", new UserServlet()).addMapping("/user");
         server.addServlet("/aadut", "Developer submitted application", new ApplicationEdit()).addMapping("/applicationEdit");
+        server.addServlet("/aadut", "User application download", new ApplicationDownload()).addMapping("/download");
         try {
             server.start();
         } catch (LifecycleException e) {

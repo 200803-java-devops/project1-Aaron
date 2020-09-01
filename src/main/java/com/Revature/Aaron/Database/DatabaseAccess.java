@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import com.Revature.Aaron.Objects.Application;
 
@@ -34,34 +35,113 @@ public class DatabaseAccess {
         return true;
     }
 
-    public static ArrayList<Application> allApplicationsFromDB() {
-        ArrayList<Application> applications = getApplicationsFromDB("", null);
+    public static HashMap<String, Application> allApplicationsFromDB() {
+        HashMap<String, Application> applications = getApplicationsFromDB("", null);
         return applications;
     }
 
-    public static ArrayList<Application> applicationsByUsernameFromDB(String username) {
-        String condition = "author_username = ?";
+    public static HashMap<String, Application> applicationsByUsernameFromDB(String username) {
+        String condition = "WHERE author_username = ?";
         String[] setValues = {username};
-        ArrayList<Application> applications = getApplicationsFromDB(condition, setValues);
+        HashMap<String, Application> applications = getApplicationsFromDB(condition, setValues);
         return applications;
     }
-    
-    public static Application applicationFromDB(String username, String appName) {
-        String condition = "author_username = ? AND application_name = ?";
-        String[] setValues = {username, appName};
-        ArrayList<Application> appArrayList = getApplicationsFromDB(condition, setValues);
-        Application app = appArrayList.get(0);
-        return app;
-	}
 
-    private static ArrayList<Application> getApplicationsFromDB(String condition, String[] setValues) {
-        ArrayList<Application> applications = new ArrayList<Application>();
-        if (condition != null) {
-            if (!condition.equals("")) {
-
+    public static HashMap<String, Application> getUserSpecificAppsFromDB(String username, Boolean not) {
+        ArrayList<String[]> downloadedAppsInfo;
+        String condition = "WHERE username = ?";
+        String[] setValues = {username};
+        downloadedAppsInfo = getAppInfoByUsername(condition, setValues);
+        if (downloadedAppsInfo == null) {
+            return null;
+        }
+        String condition2 = "WHERE ";
+        if (not) {
+            condition2 += "NOT ";
+        }
+        String appName;
+        String appAuthorUsername;
+        String[] setValues2 = new String[downloadedAppsInfo.size() * 2];
+        for (int i = 0; i < downloadedAppsInfo.size(); i++) {
+            String[] appInfo = downloadedAppsInfo.get(i);
+            appName = appInfo[0];
+            appAuthorUsername = appInfo[1];
+            condition2 += "(application_name = ? AND author_username = ?)";
+            setValues2[i*2] = appName;
+            setValues2[(i*2) + 1] = appAuthorUsername;
+            if (i + 1 <downloadedAppsInfo.size()) {
+                if (not) {
+                    condition2 += " AND NOT ";
+                } else{
+                    condition2 += " OR ";
+                }
             }
         }
-        String query = "SELECT * FROM applications WHERE";
+        HashMap<String, Application> applications = getApplicationsFromDB(condition2, setValues2);
+        return applications;
+	}
+    
+    public static Application applicationFromDB(String username, String appName) {
+        String condition = "WHERE author_username = ? AND application_name = ?";
+        String[] setValues = {username, appName};
+        HashMap<String, Application> appHashMap = getApplicationsFromDB(condition, setValues);
+        Application app = appHashMap.get(appName);
+        return app;
+    }
+    
+    
+	private static ArrayList<String[]> getAppInfoByUsername(String condition, String[] setValues) {
+        ArrayList<String[]> applicationsInfo = new ArrayList<String[]>();
+        String[] appInfo;
+
+        String query = "SELECT * FROM user_downloaded_applications";
+        if (condition != null) {
+            if (!condition.equals("")) {
+                query += " " + condition;
+            }
+        }
+        query += ";";
+
+        PreparedStatement statement;
+        ResultSet rs;
+        try {
+            statement = ConnectionUtil.getConnection().prepareStatement(query);
+            if (setValues != null) {
+                for (int i = 0; i < setValues.length; i++) {
+                    statement.setString(i + 1, setValues[i]);
+                }
+            }   
+            rs = statement.executeQuery();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+        String appName;
+        String appAuthorName;
+        String appVersionDate;
+        try {
+            while (rs.next()) {
+                appInfo = new String[3];
+                appName = rs.getString("application_name");
+                appAuthorName = rs.getString("application_author_username");
+                appVersionDate = rs.getTimestamp("app_version_date").toString();
+                appInfo[0] = appName;
+                appInfo[1] = appAuthorName;
+                appInfo[2] = appVersionDate;
+                applicationsInfo.add(appInfo);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+        return applicationsInfo;
+    }
+
+    private static HashMap<String, Application> getApplicationsFromDB(String condition, String[] setValues) {
+        HashMap<String, Application> applications = new HashMap<String, Application>();
+
+        String query = "SELECT * FROM applications";
         if (condition != null) {
             if (!condition.equals("")) {
                 query += " " + condition;
@@ -83,7 +163,7 @@ public class DatabaseAccess {
             e.printStackTrace();
             return null;
         }
-
+        String username;
         String firstName;
         String lastName;
         String appName;
@@ -94,6 +174,7 @@ public class DatabaseAccess {
         Application app;
         try {
             while (rs.next()) {
+                username = rs.getString("author_username");
                 firstName = rs.getString("author_first_name");
                 lastName = rs.getString("author_last_name");
                 appName = rs.getString("application_name");
@@ -101,14 +182,16 @@ public class DatabaseAccess {
                 appURL = rs.getString("app_url");
                 appVersion = rs.getString("app_version");
                 appVersionDate = rs.getTimestamp("app_version_date").toLocalDateTime();
-                app = new Application(firstName, lastName, appName, appDescription, appURL, appVersion, appVersionDate);
-                applications.add(app);
+                app = new Application(username, firstName, lastName, appName, appDescription, appURL, appVersion, appVersionDate);
+                applications.put(appName, app);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return applications;
     }
+
+
 
 	public static boolean validateLogin(String name, String pass) {
         String query = "SELECT * FROM users WHERE username = ? AND user_password = ?";
@@ -253,4 +336,47 @@ public class DatabaseAccess {
         }
 		return true;
 	}
+
+	public static boolean updateTimestampInUserApp(String username, String appName, String appAuthor) {
+        Application app = applicationFromDB(appAuthor, appName);
+        LocalDateTime newTimestamp = app.getVersionDate();
+        String userAppUpdate = "UPDATE user_downloaded_applications SET app_version_date = ? WHERE username = ? AND application_name = ? AND application_author_username = ?;";
+
+        PreparedStatement statement;
+        try {
+            statement = ConnectionUtil.getConnection().prepareStatement(userAppUpdate);
+            statement.setTimestamp(1, Timestamp.valueOf(newTimestamp));
+            statement.setString(2, username);
+            statement.setString(3, appName);
+            statement.setString(4, appAuthor);
+
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+	}
+
+	public static boolean addUserAppToDB(String username, String appName, String appAuthor) {
+        String userAppInsert = "INSERT INTO user_downloaded_applications VALUES(?, ?, ?, ?);";
+        Application app = applicationFromDB(appAuthor, appName);
+        LocalDateTime timestamp = app.getVersionDate();
+
+        PreparedStatement statement;
+        try {
+            statement = ConnectionUtil.getConnection().prepareStatement(userAppInsert);
+            statement.setString(1, username);
+            statement.setString(2, appName);
+            statement.setString(3, appAuthor);
+            statement.setTimestamp(4, Timestamp.valueOf(timestamp));
+ 
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+	}
+
 }
