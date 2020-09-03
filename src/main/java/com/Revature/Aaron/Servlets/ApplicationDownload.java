@@ -23,7 +23,7 @@ public class ApplicationDownload extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
     public static final String projectDirectory = new File(".").getAbsolutePath();
-    public static final String mainDirectory = projectDirectory.substring(0, projectDirectory.lastIndexOf("project1-Aaron")) + "app-projects\\";
+    public static final String mainDirectory = projectDirectory.substring(0, projectDirectory.lastIndexOf("project1-Aaron")) + "app-projects/";
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
