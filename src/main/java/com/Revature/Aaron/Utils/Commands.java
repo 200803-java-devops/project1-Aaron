@@ -9,7 +9,12 @@ public class Commands {
 
     public static String executeCommand(String command, String directory) {
         ProcessBuilder pBuilder = new ProcessBuilder();
-
+        boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
+        if (isWindows) {
+            pBuilder.command("cmd.exe", "/c", command);
+        } else {
+            pBuilder.command("sh", "-c", command);
+        }
         pBuilder.command("cmd.exe", "/c", command);
         pBuilder.directory(new File(directory));
         Process process = null;
