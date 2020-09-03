@@ -49,15 +49,24 @@ public class DatabaseAccess {
 
     public static HashMap<String, Application> getUserSpecificAppsFromDB(String username, Boolean not) {
         ArrayList<String[]> downloadedAppsInfo;
+        HashMap<String, Application> applications = new HashMap<String, Application>();
         String condition = "WHERE username = ?";
         String[] setValues = {username};
         downloadedAppsInfo = getAppInfoByUsername(condition, setValues);
         if (downloadedAppsInfo == null) {
             return null;
         }
-        String condition2 = "WHERE ";
-        if (not) {
-            condition2 += "NOT ";
+        String condition2;
+        if (downloadedAppsInfo.size() > 0) {
+            condition2 = "WHERE ";
+            if (not) {
+                condition2 += "NOT ";
+            }
+        } else {
+            condition2 = "";
+            if (!not) {
+                return applications;
+            }
         }
         String appName;
         String appAuthorUsername;
@@ -77,7 +86,7 @@ public class DatabaseAccess {
                 }
             }
         }
-        HashMap<String, Application> applications = getApplicationsFromDB(condition2, setValues2);
+        applications = getApplicationsFromDB(condition2, setValues2);
         return applications;
 	}
     

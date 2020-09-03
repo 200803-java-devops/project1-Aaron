@@ -22,7 +22,8 @@ import com.Revature.Aaron.Utils.MySessionUtils;
 public class ApplicationDownload extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
-    public static final String mainDirectory = "C:/Users/downw/OneDrive/Desktop/practice/";
+    public static final String projectDirectory = new File(".").getAbsolutePath();
+    public static final String mainDirectory = projectDirectory.substring(0, projectDirectory.lastIndexOf("project1-Aaron")) + "app-projects\\";
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -52,11 +53,11 @@ public class ApplicationDownload extends HttpServlet {
         String projectName = gitURL.substring(lastSlashIndex + 1, dotGitIndex);
         Commands.executeCommand("mvn clean package", projectDir + projectName + "/");
 
-        String fileName = projectName + ".zip";
+        String fileName = appAuthor + "_" + projectName + ".zip";
         Commands.executeCommand("jar -cMf " + fileName + " " + projectName + "/", projectDir);
-        Commands.executeCommand("mv " + fileName + " ../projectZips/", projectDir);
+        Commands.executeCommand("mv -f " + fileName + " ../projectZips/", projectDir);
 
-        File file = new File(zipDir + "/" + projectName + ".zip");
+        File file = new File(zipDir + "/" + fileName);
         ServletContext ctx = getServletContext();
 		InputStream fis = new FileInputStream(file);
 		String mimeType = ctx.getMimeType(file.getAbsolutePath());

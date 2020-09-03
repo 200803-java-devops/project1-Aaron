@@ -18,6 +18,9 @@ public class LoginServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        HttpSession session = req.getSession();
+        session.invalidate();
+        
         resp.setContentType("text/html");  
         PrintWriter out = resp.getWriter();  
           
@@ -69,7 +72,8 @@ public class LoginServlet extends HttpServlet {
                     out.close();
                     return;
             }
-            HttpSession session = req.getSession();
+
+            session = req.getSession();
             session.setAttribute("username", username);
             session.setAttribute("userFirstName", firstName);
             session.setAttribute("userLastName", lastName);

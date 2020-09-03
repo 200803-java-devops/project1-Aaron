@@ -50,14 +50,14 @@ public class UserServlet extends HttpServlet {
         if (role.equals("dev")) {
             out.println("<p><a href=\"developer\">Go to developer tools</a></p>");
         }
-        if (downloadedApps != null) {
+        if (downloadedApps.size() > 0) {
             out.println("<h2>Currently downloaded applications</h2>");
             for (Application app : downloadedApps.values()) {
                 form = appFormFormatter(app.getName(), app.getVersion(), app.getAuthorUsername(), app.getGithubURL(), app.getDescription(), app.getVersionDate(), "downloaded");
                 out.println(form);
             }            
         }
-        if (availableApps != null) {
+        if (availableApps.size() > 0) {
             out.println("<h2>Applications available on server</h2>");
             for (Application app : availableApps.values()) {
                 form = appFormFormatter(app.getName(), app.getVersion(), app.getAuthorUsername(), app.getGithubURL(), app.getDescription(), app.getVersionDate(), "available");

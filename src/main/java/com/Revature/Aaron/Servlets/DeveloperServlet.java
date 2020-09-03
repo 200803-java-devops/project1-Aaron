@@ -80,9 +80,8 @@ public class DeveloperServlet extends HttpServlet {
                 }
             }
         }
-
-        if (applications != null) {
-            out.println("<h1>Developer Tools</h2>");
+        out.println("<h1>Developer Tools</h2>");
+        if (applications.size() > 0) {
             out.println("<h2>Contributed Applications</h2>");
             for (Application app : applications.values()) {
                 appName = app.getName();
