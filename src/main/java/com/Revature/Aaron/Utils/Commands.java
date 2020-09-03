@@ -15,7 +15,6 @@ public class Commands {
         } else {
             pBuilder.command("sh", "-c", command);
         }
-        pBuilder.command("cmd.exe", "/c", command);
         pBuilder.directory(new File(directory));
         Process process = null;
         String output = "";
