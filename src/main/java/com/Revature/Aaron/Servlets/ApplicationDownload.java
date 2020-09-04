@@ -59,7 +59,7 @@ public class ApplicationDownload extends HttpServlet {
         PrintWriter out;
         RequestDispatcher rd;
 
-        String extraFilesPath = "extraFileProjects/" + appAuthor + "_" + appName + "/";
+        String extraFilesPath = "extraFileProjects\\" + appAuthor + "_" + appName + "\\";
         String output = Commands.executeCommand("mkdir " + extraFilesPath, "app-projects");
         if (output == null) {
             out = resp.getWriter();
@@ -69,7 +69,7 @@ public class ApplicationDownload extends HttpServlet {
             out.close();
             return;
         }
-        output = Commands.executeCommand("cp -R " + projectName + "/ ../" + extraFilesPath, "app-projects/compiledProjects");
+        output = Commands.executeCommand("cp -R " + projectName + "\\ ..\\" + extraFilesPath, "app-projects\\compiledProjects");
         if (output == null) {
             out = resp.getWriter();
             out.print("Problem copying project to another directory");
@@ -98,7 +98,7 @@ public class ApplicationDownload extends HttpServlet {
             out.close();
             return;
         }
-        success = addRunFile(userOS, extraFilesPath, appFinalDirectory, appJarFileName);
+        success = addRunFile(userOS, extraFilesPath, appFinalDirectory, appJarFileName, projectName);
         if (!success) {
             out = resp.getWriter();
             out.print("Problem adding run file to install package");
@@ -148,8 +148,8 @@ public class ApplicationDownload extends HttpServlet {
 
     private Boolean zipProject(String appName, String username, String appAuthor, String projectName) {
         String fileName = appAuthor + "_" + appName + ".zip";
-        String extraFileDir = "app-projects/extraFileProjects";
-        String output = Commands.executeCommand("jar -cMf " + fileName + " " + projectName + "/", extraFileDir);
+        String extraFileDir = "app-projects\\extraFileProjects";
+        String output = Commands.executeCommand("jar -cMf " + fileName + " " + appAuthor + "_" + projectName + "\\", extraFileDir);
         if (output == null) {
             return false;
         }
@@ -164,11 +164,11 @@ public class ApplicationDownload extends HttpServlet {
         return true;
     }
 
-    private Boolean addRunFile(String userOS, String extraFilesPath, String appFinalDirectory, String appJarFileName) {
-        String pathname = extraFilesPath + "/run";
+    private Boolean addRunFile(String userOS, String extraFilesPath, String appFinalDirectory, String appJarFileName, String projectName) {
+        String pathname = extraFilesPath + "/" + projectName + "/run";
         String extension = (userOS.equals("windows")) ? ".bat" : ".sh";
         pathname += extension;
-        String batchText = "@echo off\nstart java -jar " + appFinalDirectory + "\\target\\" + appJarFileName;
+        String batchText = "@echo off\nstart java -jar " + appFinalDirectory + "\\" + projectName + "\\target\\" + appJarFileName;
         String shellText = "java -jar " + appFinalDirectory + appJarFileName;
         File instructions = new File(pathname);
         try {
@@ -199,8 +199,8 @@ public class ApplicationDownload extends HttpServlet {
         String pathname = extraFilesPath + "/startup";
         String extension = (userOS.equals("windows")) ? ".bat" : ".sh";
         pathname += extension;
-        appFinalDirectory += projectName;
-        String batchText = "@echo off\ntitle startup batch script\nif not exist \"" + appFinalDirectory + "\" mkdir \"" + appFinalDirectory + "\"\nmove \"" + projectName + "/\" \"" + appFinalDirectory + "\"";
+        appFinalDirectory += "\\" + projectName;
+        String batchText = "@echo off\ntitle startup batch script\nif not exist \"" + appFinalDirectory + "\\\" mkdir \"" + appFinalDirectory + "\\\"\nmove \"" + projectName + "\\\" \"" + appFinalDirectory + "\\\"";
         String shellText = "mkdir " + appFinalDirectory + "\nmv * .[^.]* " + appFinalDirectory;
         File instructions = new File(pathname);
         try {
