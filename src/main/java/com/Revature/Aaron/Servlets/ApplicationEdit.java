@@ -12,11 +12,22 @@ import javax.servlet.http.HttpSession;
 
 import com.Revature.Aaron.Database.DatabaseAccess;
 import com.Revature.Aaron.Objects.Application;
+import com.Revature.Aaron.Utils.Commands;
 import com.Revature.Aaron.Utils.MySessionUtils;
 
 public class ApplicationEdit extends HttpServlet {
     
     private static final long serialVersionUID = 1L;
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.setContentType("text/html");
+        PrintWriter out = resp.getWriter();
+        out.println("Redirected to login page");
+        RequestDispatcher rd = req.getRequestDispatcher("index.html");
+        rd.include(req, resp);
+        out.close();
+    }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -36,6 +47,7 @@ public class ApplicationEdit extends HttpServlet {
         String appURL = "";
         String version = "";
         String editType = "add";
+        String appJarFileName = "";
         Application app = null;
         RequestDispatcher rd;
 
@@ -45,6 +57,7 @@ public class ApplicationEdit extends HttpServlet {
             appDescription = app.getDescription();
             appURL = app.getGithubURL();
             version = app.getVersion();
+            appJarFileName = app.getJarFileName();
             editType = "edit";
         }
         //coming from manual update link
@@ -56,13 +69,18 @@ public class ApplicationEdit extends HttpServlet {
                 out.close();
                 return;
             }
-            Boolean updateSuccess = DatabaseAccess.updateAppTimestampInDB(username, appName);
-            if (updateSuccess) {
-                out.println("Successful update");
-                MySessionUtils.updateSessionAppMaps(session);
-            } else {
-                out.println("Unable to update application");         
-            }
+            Boolean serverAddSuccess = ApplicationEdit.cloneAndPackageProject(appName, appURL, username, out);
+                if (serverAddSuccess) {
+                    Boolean updateSuccess = DatabaseAccess.updateAppTimestampInDB(username, appName);
+                    if (updateSuccess) {
+                        out.println("Successful update");
+                        MySessionUtils.updateSessionAppMaps(session);
+                    } else {
+                        out.println("Unable to update application");         
+                    }
+                } else {
+                    out.println("<p>Problem pulling project from GitHub and packaging for distribution. Contact server manager for help.</p>");
+                }
             rd.include(req, resp);
             out.close();
             return;
@@ -78,10 +96,38 @@ public class ApplicationEdit extends HttpServlet {
             "<br />\n" +
             "GitHub Repository URL: <input type = \"text\" name = \"appURL\" value = " + appURL + ">\n" +
             "<br />\n" +
+            "Compiled project jar file name (your-app.jar): <input type = \"text\" name = \"appJarFileName\" value = " + appJarFileName + ">\n" +
+            "<br />\n" +
             "<input type = \"submit\" value = \"Submit\" name = \"submitButton\" id = \"submitButton\"/>\n" +
             "<input type = \"submit\" value = \"Cancel\" name = \"cancelButton\" id = \"cancelButton\"/>\n" +
             "<input type=\"hidden\" id=\"editType\" name=\"editType\" value=\"" + editType + "\"/>\n" +
             "<input type=\"hidden\" id=\"oldAppName\" name=\"oldAppName\" value=\"" + appName + "\"/>\n" +
             "</form>");
+    }
+
+    public static boolean cloneAndPackageProject(String appName, String gitURL, String appAuthor, PrintWriter out) {
+        
+        String projectDir = "app-projects/gitProjects";
+        String compileDir = "app-projects/compiledProjects";
+        
+        String output = Commands.executeCommand("git clone " + gitURL, projectDir);
+        if (output == null) {
+            out.println("Problem cloning GitHub repository. Contact server manager for help");
+            return false;
+        }
+        int dotGitIndex = gitURL.indexOf(".git");
+        int lastSlashIndex = gitURL.lastIndexOf("/");
+        String projectName = gitURL.substring(lastSlashIndex + 1, dotGitIndex);
+        output = Commands.executeCommand("mv -f " + projectName + "/ ../compiledProjects/", projectDir);
+        if (output == null) {
+            out.println("Problem moving project. Contact server manager for help");
+            return false;
+        }
+        output = Commands.executeCommand("mvn clean package", compileDir + "/" + projectName + "/");
+        if (output == null) {
+            out.println("Problem packaging project. Contact server manager for help");
+            return false;
+        }
+        return true;
     }
 }

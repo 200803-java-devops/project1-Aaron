@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -20,7 +21,12 @@ public class UserServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        doPost(req, resp);
+        resp.setContentType("text/html");
+        PrintWriter out = resp.getWriter();
+        out.println("Redirected to login page");
+        RequestDispatcher rd = req.getRequestDispatcher("index.html");
+        rd.include(req, resp);
+        out.close();
     }
 
     @Override
@@ -47,20 +53,24 @@ public class UserServlet extends HttpServlet {
         String form;
 
         out.println("<h1>User Tools</h1>");
-        if (role.equals("dev")) {
-            out.println("<p><a href=\"developer\">Go to developer tools</a></p>");
+        if (role.equals("dev") || role.equals("manager")) {
+            out.println("<p><a href=\"developer\">Go to Developer Tools</a></p>");
+            if (role.equals("manager")) {
+                out.println("<p><a href=\"manager\">Go to Manager Tools</a></p>");
+            }
         }
+        
         if (downloadedApps.size() > 0) {
             out.println("<h2>Currently downloaded applications</h2>");
             for (Application app : downloadedApps.values()) {
-                form = appFormFormatter(app.getName(), app.getVersion(), app.getAuthorUsername(), app.getGithubURL(), app.getDescription(), app.getVersionDate(), "downloaded");
+                form = appFormFormatter(app.getName(), app.getVersion(), app.getAuthorUsername(), app.getGithubURL(), app.getDescription(), app.getVersionDate(), app.getJarFileName(), "downloaded");
                 out.println(form);
             }            
         }
         if (availableApps.size() > 0) {
             out.println("<h2>Applications available on server</h2>");
             for (Application app : availableApps.values()) {
-                form = appFormFormatter(app.getName(), app.getVersion(), app.getAuthorUsername(), app.getGithubURL(), app.getDescription(), app.getVersionDate(), "available");
+                form = appFormFormatter(app.getName(), app.getVersion(), app.getAuthorUsername(), app.getGithubURL(), app.getDescription(), app.getVersionDate(), app.getJarFileName(), "available");
                 out.println(form);
             }   
         } else {
@@ -69,8 +79,8 @@ public class UserServlet extends HttpServlet {
         out.close();
     }
 
-    private static String appFormFormatter(String appName, String appVersion, String appAuthorUsername, String appURL, String appDescription, LocalDateTime appVersionDate, String context) {
-        String form = "<form action = \"download\" method = \"POST\">\n";
+    private static String appFormFormatter(String appName, String appVersion, String appAuthorUsername, String appURL, String appDescription, LocalDateTime appVersionDate, String appJarFileName, String context) {
+        String form = "<form action = \"downloadInfo\" method = \"POST\">\n";
         form += appName + " " + appVersion;
         if (context.equals("downloaded")) {
             form += "<input type = \"submit\" value = \"manual update/download again\" name = \"updateButton\" id = \"updateButton\"/>\n";
@@ -80,6 +90,7 @@ public class UserServlet extends HttpServlet {
         form += "<input type = \"hidden\" id = \"appName\" name = \"appName\" value = \"" + appName + "\" />\n";
         form += "<input type = \"hidden\" id = \"appAuthorUsername\" name = \"appAuthorUsername\" value = \"" + appAuthorUsername + "\"/>\n";
         form += "<input type = \"hidden\" id = \"githubURL\" name = \"githubURL\" value = \"" + appURL + "\"/>\n";
+        form += "<input type = \"hidden\" id = \"appJarFileName\" name = \"appJarFileName\" value = \"" + appJarFileName + "\"/>\n";
         form += "</form>\n";
         form += "<p>" + appDescription + "</p>\n";
         form += "<p>By: " + appAuthorUsername + "</p>\n";

@@ -2,8 +2,8 @@ package com.Revature.Aaron.Utils;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.concurrent.TimeUnit;
 
 public class Commands {
 
@@ -22,18 +22,26 @@ public class Commands {
         try {
             process = pBuilder.start();
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            process.waitFor();
-
-            while (reader.ready()) {
-                output += reader.readLine() + "\n";
+            try (BufferedReader inputReader = new BufferedReader(new InputStreamReader(process.getInputStream())); BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+                Boolean noTimeout = process.waitFor(60, TimeUnit.SECONDS);
+                if(!noTimeout) {
+                }
+                String line;
+                while (inputReader.ready()) {
+                    line = inputReader.readLine() + "\n";
+                    output += line;
+                }
+                while (errorReader.ready()) {
+                    line = errorReader.readLine() + "\n";
+                    output += line;
+                }
+            }  catch (InterruptedException e) {
+                e.printStackTrace();
+                return null;
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
 
         return output;

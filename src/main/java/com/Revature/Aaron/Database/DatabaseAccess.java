@@ -12,9 +12,9 @@ import com.Revature.Aaron.Objects.Application;
 
 public class DatabaseAccess {
     
-    public static boolean addApplicationToDB(String appName, String username, String firstName, String lastName, String appDescription, String appURL, String version) {
+    public static boolean addApplicationToDB(String appName, String username, String firstName, String lastName, String appDescription, String appURL, String version, String appJarFileName) {
 
-        String applicationInsert = "INSERT INTO applications VALUES(?, ?, ?, ?, ?, ?, ?, ?);";
+        String applicationInsert = "INSERT INTO applications VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);";
         PreparedStatement statement;
         try {
             statement = ConnectionUtil.getConnection().prepareStatement(applicationInsert);
@@ -26,6 +26,7 @@ public class DatabaseAccess {
             statement.setString(6, appURL);
             statement.setString(7, version);
             statement.setTimestamp(8, Timestamp.valueOf(LocalDateTime.now()));
+            statement.setString(7, appJarFileName);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -97,6 +98,14 @@ public class DatabaseAccess {
         Application app = appHashMap.get(appName);
         return app;
     }
+
+    public static String[] getUserSpecificAppInfoFromDB(String username, String appName, String appAuthorUsername) {
+        String condition = "WHERE username = ? AND application_name = ? AND application_author_username = ?";
+        String[] setValues = {username, appName, appAuthorUsername};
+        ArrayList<String[]> appInfoAL = getAppInfoByUsername(condition, setValues);
+        String[] appInfo = appInfoAL.get(0);
+        return appInfo;
+    }
     
     
 	private static ArrayList<String[]> getAppInfoByUsername(String condition, String[] setValues) {
@@ -129,15 +138,29 @@ public class DatabaseAccess {
         String appName;
         String appAuthorName;
         String appVersionDate;
+        String userOS;
+        String userAppFinalDirectory;
+        String autoUpdate;
         try {
             while (rs.next()) {
-                appInfo = new String[3];
+                appInfo = new String[6];
                 appName = rs.getString("application_name");
                 appAuthorName = rs.getString("application_author_username");
                 appVersionDate = rs.getTimestamp("app_version_date").toString();
+                userOS = rs.getString("user_OS").toLowerCase();
+                userAppFinalDirectory = rs.getString("user_application_final_directory");
+                Boolean autoUpdateBool = rs.getBoolean("app_auto_update");
+                if (autoUpdateBool) {
+                    autoUpdate = "true";
+                } else {
+                    autoUpdate = "false";
+                }
                 appInfo[0] = appName;
                 appInfo[1] = appAuthorName;
                 appInfo[2] = appVersionDate;
+                appInfo[3] = userOS;
+                appInfo[4] = userAppFinalDirectory;
+                appInfo[5] = autoUpdate;
                 applicationsInfo.add(appInfo);
             }
         } catch (SQLException e) {
@@ -180,6 +203,7 @@ public class DatabaseAccess {
         String appURL;
         String appVersion;
         LocalDateTime appVersionDate;
+        String appJarFileName;
         Application app;
         try {
             while (rs.next()) {
@@ -191,7 +215,8 @@ public class DatabaseAccess {
                 appURL = rs.getString("app_url");
                 appVersion = rs.getString("app_version");
                 appVersionDate = rs.getTimestamp("app_version_date").toLocalDateTime();
-                app = new Application(username, firstName, lastName, appName, appDescription, appURL, appVersion, appVersionDate);
+                appJarFileName = rs.getString("app_jar_file_name");
+                app = new Application(username, firstName, lastName, appName, appDescription, appURL, appVersion, appVersionDate, appJarFileName);
                 applications.put(appName, app);
             }
         } catch (SQLException e) {
@@ -367,8 +392,8 @@ public class DatabaseAccess {
         return true;
 	}
 
-	public static boolean addUserAppToDB(String username, String appName, String appAuthor) {
-        String userAppInsert = "INSERT INTO user_downloaded_applications VALUES(?, ?, ?, ?);";
+	public static boolean addUserAppToDB(String username, String appName, String appAuthor, String userOS, String appfinalDirectory, Boolean autoUpdate) {
+        String userAppInsert = "INSERT INTO user_downloaded_applications VALUES(?, ?, ?, ?, ?, ?, ?);";
         Application app = applicationFromDB(appAuthor, appName);
         LocalDateTime timestamp = app.getVersionDate();
 
@@ -379,6 +404,9 @@ public class DatabaseAccess {
             statement.setString(2, appName);
             statement.setString(3, appAuthor);
             statement.setTimestamp(4, Timestamp.valueOf(timestamp));
+            statement.setString(5, userOS);
+            statement.setString(6, appfinalDirectory);
+            statement.setBoolean(7, autoUpdate);
  
             statement.executeUpdate();
         } catch (SQLException e) {
@@ -386,6 +414,22 @@ public class DatabaseAccess {
             return false;
         }
         return true;
+	}
+
+	public static boolean deleteUserAppFromDB(String username, String appName, String appAuthor) {
+        String appDelete = "DELETE FROM user_downloaded_applications WHERE username = ? AND application_name = ? AND application_author_name = ?;";
+        PreparedStatement statement;
+        try {
+            statement = ConnectionUtil.getConnection().prepareStatement(appDelete);
+            statement.setString(1, username);
+            statement.setString(2, appName);
+            statement.setString(2, appAuthor);
+            statement.executeUpdate();            
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+		return true;
 	}
 
 }

@@ -1,7 +1,15 @@
-target/
+target/*
 .classpath
 .project
-.settings/
-.vscode/
+.settings/*
+.vscode/*
 bash.exe.stackdump
-aws server/
+aws server/*
+app-projects/gitProjects/*
+!app-projects/gitProjects/.gitkeep
+app-projects/projectZips/*
+!app-projects/projectZips/.gitkeep
+app-projects/compiledProjects/*
+!app-projects/compiledProjects/.gitkeep
+app-projects/extraFileProjects/*
+!app-projects/extraFileProjects/.gitkeep

@@ -12,8 +12,9 @@ public class Application {
     private String githubURL;
     private String version;
     private LocalDateTime versionDate;
+    private String jarFileName;
 
-    public Application(String authorUsername, String authorFirstName, String authorLastName, String name, String description, String githubURL, String version, LocalDateTime versionDate) {
+    public Application(String authorUsername, String authorFirstName, String authorLastName, String name, String description, String githubURL, String version, LocalDateTime versionDate, String jarFileName) {
         this.setAuthorUsername(authorUsername);
         this.setAuthorFirstName(authorFirstName);
         this.setAuthorLastName(authorLastName);
@@ -22,7 +23,16 @@ public class Application {
         this.setGithubURL(githubURL);
         this.setVersion(version);
         this.setVersionDate(versionDate);
+        this.setjarFileName(jarFileName);
     }
+
+    private void setjarFileName(String jarFileName) {
+        this.jarFileName = jarFileName;
+    }
+    
+    public String getJarFileName() {
+		return this.jarFileName;
+	}
 
     public LocalDateTime getVersionDate() {
 		return versionDate;
