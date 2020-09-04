@@ -43,7 +43,6 @@ public class ApplicationDownload extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         HttpSession session = req.getSession();
         String updateButton = req.getParameter("updateButton");
-        String downloadButton = req.getParameter("downloadButton");
         String username = (String) session.getAttribute("username");
         String appAuthor = req.getParameter("appAuthorUsername");
         String appName = req.getParameter("appName");
@@ -60,17 +59,28 @@ public class ApplicationDownload extends HttpServlet {
         PrintWriter out;
         RequestDispatcher rd;
 
-        String output = Commands.executeCommand("cp -R " + projectName + "/ ../extraFileProjects/", "app-projects/compiledProjects");
+        String extraFilesPath = "extraFileProjects/" + appAuthor + "_" + appName + "/";
+        String output = Commands.executeCommand("mkdir " + extraFilesPath, "app-projects");
         if (output == null) {
             out = resp.getWriter();
-            out.print("Problem adding user instruction file");
+            out.print("Problem creating folder");
+            rd = req.getRequestDispatcher("downloadInfo");
+            rd.include(req, resp);
+            out.close();
+            return;
+        }
+        output = Commands.executeCommand("cp -R " + projectName + "/ ../" + extraFilesPath, "app-projects/compiledProjects");
+        if (output == null) {
+            out = resp.getWriter();
+            out.print("Problem copying project to another directory");
             rd = req.getRequestDispatcher("downloadInfo");
             rd.include(req, resp);
             out.close();
             return;
         }
 
-        Boolean success = addUserInstructionFile(appName, appAuthor, projectName, userOS, appFinalDirectory);
+        extraFilesPath = "app-projects/" + extraFilesPath;
+        Boolean success = addUserInstructionFile(appName, appAuthor, extraFilesPath, userOS, appFinalDirectory);
         if (!success) {
             out = resp.getWriter();
             out.print("Problem adding user instruction file");
@@ -79,7 +89,7 @@ public class ApplicationDownload extends HttpServlet {
             out.close();
             return;
         }
-        success = addStartupFile(userOS, appFinalDirectory, projectName);
+        success = addStartupFile(userOS, appFinalDirectory, extraFilesPath, projectName);
         if (!success) {
             out = resp.getWriter();
             out.print("Problem adding startup file to install package");
@@ -88,7 +98,7 @@ public class ApplicationDownload extends HttpServlet {
             out.close();
             return;
         }
-        success = addRunFile(userOS, projectName, appFinalDirectory, appJarFileName);
+        success = addRunFile(userOS, extraFilesPath, appFinalDirectory, appJarFileName);
         if (!success) {
             out = resp.getWriter();
             out.print("Problem adding run file to install package");
@@ -147,18 +157,18 @@ public class ApplicationDownload extends HttpServlet {
         if (output == null) {
             return false;
         }
-        output = Commands.executeCommand("rm -rf " + projectName + "/", extraFileDir);
+        output = Commands.executeCommand("rm -rf " + appAuthor + "_" + projectName + "/", extraFileDir);
         if (output == null) {
             return false;
         }
         return true;
     }
 
-    private Boolean addRunFile(String userOS, String projectName, String appFinalDirectory, String appJarFileName) {
-        String pathname = "app-projects/extraFileProjects/" + projectName + "/startup";
+    private Boolean addRunFile(String userOS, String extraFilesPath, String appFinalDirectory, String appJarFileName) {
+        String pathname = extraFilesPath + "/run";
         String extension = (userOS.equals("windows")) ? ".bat" : ".sh";
         pathname += extension;
-        String batchText = "@echo off\nstart java -jar " + appFinalDirectory + appJarFileName;
+        String batchText = "@echo off\nstart java -jar " + appFinalDirectory + "\\target\\" + appJarFileName;
         String shellText = "java -jar " + appFinalDirectory + appJarFileName;
         File instructions = new File(pathname);
         try {
@@ -185,11 +195,12 @@ public class ApplicationDownload extends HttpServlet {
         return true;
     }
 
-    private Boolean addStartupFile(String userOS, String appFinalDirectory, String projectName) {
-        String pathname = "app-projects/extraFileProjects/" + projectName + "/startup";
+    private Boolean addStartupFile(String userOS, String appFinalDirectory, String extraFilesPath, String projectName) {
+        String pathname = extraFilesPath + "/startup";
         String extension = (userOS.equals("windows")) ? ".bat" : ".sh";
         pathname += extension;
-        String batchText = "@echo off\ntitle startup batch script\nif not exist \"" + appFinalDirectory + "\" mkdir \"" + appFinalDirectory + "\"\nmove *.* \"" + appFinalDirectory + "\"";
+        appFinalDirectory += projectName;
+        String batchText = "@echo off\ntitle startup batch script\nif not exist \"" + appFinalDirectory + "\" mkdir \"" + appFinalDirectory + "\"\nmove \"" + projectName + "/\" \"" + appFinalDirectory + "\"";
         String shellText = "mkdir " + appFinalDirectory + "\nmv * .[^.]* " + appFinalDirectory;
         File instructions = new File(pathname);
         try {
@@ -216,9 +227,8 @@ public class ApplicationDownload extends HttpServlet {
         return true;
     }
 
-    private Boolean addUserInstructionFile(String appName, String appAuthor, String projectName, String userOS,
-            String appFinalDirectory) {
-        String pathname = "app-projects/extraFileProjects/" + projectName + "/User_Instructions.txt";
+    private Boolean addUserInstructionFile(String appName, String appAuthor, String extraFilesPath, String userOS, String appFinalDirectory) {
+        String pathname = extraFilesPath + "User_Instructions.txt";
         String extension = (userOS.equals("windows")) ? ".bat" : ".sh";
         File instructions = new File(pathname);
         try {

@@ -26,7 +26,7 @@ public class DatabaseAccess {
             statement.setString(6, appURL);
             statement.setString(7, version);
             statement.setTimestamp(8, Timestamp.valueOf(LocalDateTime.now()));
-            statement.setString(7, appJarFileName);
+            statement.setString(9, appJarFileName);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -417,13 +417,13 @@ public class DatabaseAccess {
 	}
 
 	public static boolean deleteUserAppFromDB(String username, String appName, String appAuthor) {
-        String appDelete = "DELETE FROM user_downloaded_applications WHERE username = ? AND application_name = ? AND application_author_name = ?;";
+        String appDelete = "DELETE FROM user_downloaded_applications WHERE username = ? AND application_name = ? AND application_author_username = ?;";
         PreparedStatement statement;
         try {
             statement = ConnectionUtil.getConnection().prepareStatement(appDelete);
             statement.setString(1, username);
             statement.setString(2, appName);
-            statement.setString(2, appAuthor);
+            statement.setString(3, appAuthor);
             statement.executeUpdate();            
         } catch (SQLException e) {
             e.printStackTrace();
