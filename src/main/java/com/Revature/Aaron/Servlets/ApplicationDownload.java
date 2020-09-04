@@ -26,12 +26,17 @@ public class ApplicationDownload extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        HttpSession session = req.getSession();
+        if (session != null) {
+            doPost(req, resp);
+        } else {
         resp.setContentType("text/html");
         PrintWriter out = resp.getWriter();
         out.println("Redirected to login page");
         RequestDispatcher rd = req.getRequestDispatcher("index.html");
         rd.include(req, resp);
         out.close();
+        }
     }
 
     @Override
